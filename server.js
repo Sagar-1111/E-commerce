@@ -17,6 +17,7 @@ mongoose.connect('mongodb://user:root@ds147274.mlab.com:47274/ecommerce', err =>
   console.log('Connected to Database');
 })
 
+app.use(express.static(__dirname + 'public'));
 app.use(morgan('dev'));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -34,7 +35,7 @@ app.post('/create-user', (req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.render('home');
+  res.render('main/home');
 });
 
 app.listen(3050, err => {
