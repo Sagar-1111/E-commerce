@@ -19,7 +19,7 @@ mongoose.connect('mongodb://user:root@ds147274.mlab.com:47274/ecommerce', { useM
     console.log(err);
   })
 
-app.use(express.static(__dirname + 'public'));
+app.use(express.static(__dirname + '/public'));
 app.use(morgan('dev'));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
