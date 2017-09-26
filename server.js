@@ -8,13 +8,14 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const flash = require('express-flash');
 
+const secret = require('./config/secret');
 const mainRoutes = require('./routes/main');
 const userRoutes = require('./routes/user');
 const app = express();
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect('mongodb://user:root@ds147274.mlab.com:47274/ecommerce', { useMongoClient: true })
+mongoose.connect(secret.database, { useMongoClient: true })
   .then(connect => {
     console.log("Connected to Database")
   })
@@ -30,7 +31,7 @@ app.use(cookieParser());
 app.use(session({
   resave: true,
   saveUninitialized: true,
-  secret: "Fullmetal%%@#"
+  secret: secret.secretKey
 }));
 app.use(flash());
 app.engine('ejs', engine);
@@ -42,7 +43,7 @@ app.use((err, req, res, next) => {
   res.status(422).send({ error: err.message });
 });
 
-app.listen(3050, err => {
+app.listen(secret.port, err => {
   if(err) throw err;
-  console.log("listening on 3050");
+  console.log("listening on " + secret.port);
 });
