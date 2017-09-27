@@ -58,7 +58,7 @@ router.get('/logout', (req, res, next) => {
 });
 
 router.get('/edit-profile', (req, res, next) => {
-  res.render('accounts/edit-profile.ejs', { message: req.flash('success')});
+  res.render('accounts/edit-profile.ejs', { message: req.flash('success'), user:req.user });
 });
 
 router.post('/edit-profile', (req, res, next) => {
