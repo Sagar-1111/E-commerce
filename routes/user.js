@@ -31,16 +31,22 @@ router.post('/signup', (req, res, next) => {
   user.profile.name = req.body.name;
   user.password = req.body.password;
   user.email = req.body.email;
+  user.profile.picture = user.gravatar();
 
   User.findOne({ email: req.body.email})
-    .then(usr => {
-      if(usr){
+    .then(existingUser => {
+      if(existingUser){
         req.flash('errors', 'Account with that email address already exists')
         return res.redirect('/signup')
       }
       else {
         user.save()
-          .then(user => res.redirect('/'))
+          .then(user => {
+            req.logIn(user, function(err) {
+              if(err) return next(err);
+              res.redirect('/profile')
+            })
+          })
           .catch(next);
       }
     });
