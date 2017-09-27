@@ -57,4 +57,23 @@ router.get('/logout', (req, res, next) => {
   res.redirect('/');
 });
 
+router.get('/edit-profile', (req, res, next) => {
+  res.render('accounts/edit-profile.ejs', { message: req.flash('success')});
+});
+
+router.post('/edit-profile', (req, res, next) => {
+  User.findOne({ _id: req.user._id })
+    .then(user =>{
+      if (req.body.name) user.profile.name = req.body.name;
+      if (req.body.address) user.address = req.body.address;
+      user.save()
+        .then(usr => {
+          req.flash('success', 'Successfully Edited your profile');
+          return res.redirect('/edit-profile');
+        })
+        .catch(err => next(err))
+    })
+    .catch(err => next(err))
+});
+
 module.exports = router;
