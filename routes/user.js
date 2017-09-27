@@ -15,9 +15,7 @@ router.post('/login', passport.authenticate('local-login',{
 }));
 
 router.get('/profile', (req, res, next) => {
-  User.findOne({ _id: req.user._id })
-    .then(user => res.render('accounts/profile', { user: user }))
-    .catch(err => next(err))
+  res.render('accounts/profile')
 });
 
 router.get('/signup', (req, res, next) =>{
@@ -58,7 +56,7 @@ router.get('/logout', (req, res, next) => {
 });
 
 router.get('/edit-profile', (req, res, next) => {
-  res.render('accounts/edit-profile.ejs', { message: req.flash('success'), user:req.user });
+  res.render('accounts/edit-profile.ejs', {message: req.flash('success')});
 });
 
 router.post('/edit-profile', (req, res, next) => {

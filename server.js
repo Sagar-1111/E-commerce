@@ -36,13 +36,13 @@ app.use(session({
   secret: secret.secretKey,
   store: new MongoStore({ url: secret.database, autoReconnect: true})
 }));
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
 app.use((req, res, next) =>{
   res.locals.user = req.user;
   next();
 });
-app.use(flash());
-app.use(passport.initialize());
-app.use(passport.session());
 app.engine('ejs', engine);
 app.set('view engine', 'ejs');
 app.use(mainRoutes);
