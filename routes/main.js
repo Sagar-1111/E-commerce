@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const Product = require('../models/product');
 
-Product.createMapping(function(err, mapping){
+Product.createMapping((err, mapping) => {
   if(err){
     console.log("error creating mapping");
     console.log(err);
@@ -14,16 +14,36 @@ Product.createMapping(function(err, mapping){
 const stream = Product.synchronize();
 let count = 0;
 
-stream.on('data', function(){
+stream.on('data', () => {
   count++;
 });
 
-stream.on('close', function(){
+stream.on('close', () => {
   console.log("Indexed " + count + " documents");
 });
 
-stream.on('error', function(err){
+stream.on('error', err => {
   console.log(err);
+});
+
+router.post('/search', (req, res, next) => {
+  res.redirect('/search?q=' + req.body.q);
+});
+
+router.get('/search', (req, res, next) => {
+  if(req.query.q){
+    Product.search({ query_string: { query: req.query.q }
+    }, (err, results) => {
+      if(err) return next(err);
+      const data = results.hits.hits.map(hit => {
+        return hit;
+      });
+      res.render('main/search-result', {
+        query: req.query.q,
+        data: data
+      });
+    });
+  }
 });
 
 router.get('/', (req, res) => {
