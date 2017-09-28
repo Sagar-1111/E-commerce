@@ -13,6 +13,8 @@ const passport = require('passport');
 const secret = require('./config/secret');
 const mainRoutes = require('./routes/main');
 const userRoutes = require('./routes/user');
+const adminRoutes = require('./routes/admin');
+const Category = require('./models/category');
 const app = express();
 
 mongoose.Promise = global.Promise;
@@ -39,19 +41,26 @@ app.use(session({
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
-app.use((req, res, next) =>{
+app.use((req, res, next) => {
   res.locals.user = req.user;
   next();
 });
+app.use((req, res, next) => {
+  Category.find({})
+    .then((categories) => {
+      res.locals.categories = categories;
+      next();
+    })
+    .catch(err => next(err))
+});
 app.engine('ejs', engine);
 app.set('view engine', 'ejs');
+app.use(adminRoutes);
 app.use(mainRoutes);
 app.use(userRoutes);
-
 app.use((err, req, res, next) => {
   res.status(422).send({ error: err.message });
 });
-
 app.listen(secret.port, err => {
   if(err) throw err;
   console.log("listening on " + secret.port);
