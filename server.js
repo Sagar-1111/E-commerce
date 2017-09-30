@@ -10,6 +10,7 @@ const flash = require('express-flash');
 const MongoStore = require('connect-mongo')(session);
 const passport = require('passport');
 
+const cartLength = require('./middlewares/middlewares');
 const secret = require('./config/secret');
 const mainRoutes = require('./routes/main');
 const userRoutes = require('./routes/user');
@@ -46,6 +47,7 @@ app.use((req, res, next) => {
   res.locals.user = req.user;
   next();
 });
+app.use(cartLength)
 app.use((req, res, next) => {
   Category.find({})
     .then((categories) => {

@@ -1,6 +1,7 @@
+const passport = require('passport');
 const router = require('express').Router();
 const User = require('../models/user');
-const passport = require('passport');
+const Cart = require('../models/cart');
 const passportConf = require('../config/passport');
 
 router.get('/login', (req, res) => {
@@ -30,7 +31,6 @@ router.post('/signup', (req, res, next) => {
   user.password = req.body.password;
   user.email = req.body.email;
   user.profile.picture = user.gravatar();
-
   User.findOne({ email: req.body.email})
     .then(existingUser => {
       if(existingUser){
@@ -39,11 +39,18 @@ router.post('/signup', (req, res, next) => {
       }
       else {
         user.save()
+          .then(user => user)
           .then(user => {
-            req.logIn(user, function(err) {
-              if(err) return next(err);
-              res.redirect('/profile')
-            })
+            const cart = new Cart();
+            cart.owner = user._id;
+            cart.save()
+              .then(cart => {
+                req.logIn(user, function(err){
+                  if (err) return next(err);
+                  res.redirect('/profile');
+                })
+              })
+              .catch(err => next(err));
           })
           .catch(next);
       }

@@ -45,6 +45,21 @@ stream.on('error', err => {
   console.log(err);
 });
 
+router.post('/product/:product_id', (req, res, next) => {
+  Cart.findOne({ owner: req.user._id })
+    .then(cart => {
+      cart.item.push({
+        item: req.body.product_id,
+        price: parseFloat(req.body.priceValue),
+        quantity: parseInt(req.body.quantity)
+      });
+      cart.total = (cart.total + parseFloat(req.body.priceValue)).toFixed(2);
+      cart.save()
+        .then(cart => res.redirect('/cart'))
+        .catch(err => next(err));
+    })
+});
+
 router.post('/search', (req, res, next) => {
   res.redirect('/search?q=' + req.body.q);
 });
