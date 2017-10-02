@@ -1,5 +1,7 @@
 const router = require('express').Router();
 const Product = require('../models/product');
+const Cart = require('../models/cart');
+const stripe = require('stripe')('sk_test_RtVWGtHcykG3FyyNS1EGhbIq');
 
 function paginate(req, res, next){
   const perPage = 9;
@@ -45,10 +47,22 @@ stream.on('error', err => {
   console.log(err);
 });
 
+router.get('/cart', (req, res, next) => {
+  Cart.findOne({ owner: req.user._id })
+    .populate('items.item')
+    .then(foundCart => {
+      res.render('main/cart', {
+        foundCart: foundCart,
+        message: req.flash('remove')
+      })
+    })
+    .catch(err => next(err));
+});
+
 router.post('/product/:product_id', (req, res, next) => {
   Cart.findOne({ owner: req.user._id })
     .then(cart => {
-      cart.item.push({
+      cart.items.push({
         item: req.body.product_id,
         price: parseFloat(req.body.priceValue),
         quantity: parseInt(req.body.quantity)
@@ -58,6 +72,21 @@ router.post('/product/:product_id', (req, res, next) => {
         .then(cart => res.redirect('/cart'))
         .catch(err => next(err));
     })
+    .catch(err => next(err));
+});
+
+router.post('/remove', (req, res, next) => {
+  Cart.findOne({ owner: req.user._id })
+    .then(foundCart => {
+      foundCart.items.pull(String(req.body.item));
+      foundCart.total = (foundCart.total - parseFloat(req.body.price)).toFixed(2);
+      foundCart.save()
+        .then(found => {
+          req.flash('remove', 'Successfully removed');
+          res.redirect('/cart');
+        })
+        .catch(err => next(err));
+    });
 });
 
 router.post('/search', (req, res, next) => {
@@ -111,5 +140,44 @@ router.get('/product/:id', (req, res, next) => {
     })
     .catch(err => next(err));
 })
+
+router.post('/payment', (req, res, next) => {
+  const stripeToken = req.body.stripeToken;
+  const currentCharges = Math.round(req.body.stripeMoney * 100);
+  stripe.customers.create({
+    source: stripeToken
+  })
+  .then(customer => {
+    return stripe.charges.create({
+      amount: currentCharges,
+      currency: 'usd',
+      customer: customer.id
+    });
+  })
+  .then(charge => {
+    Cart.findOne({ owner: req.user._id })
+      .then(cart => {
+        User.findOne({ _id: req.user._id })
+          .then(user => {
+            user.forEach((item, index) => {
+              user.history.push({
+                item: item.item,
+                paid: item.price
+              })
+            })
+            user.save()
+              .then(user => {
+                Cart.update({ owner:user._id }, {$set: { items: [], total:0 }})
+                  .then(updated => {
+                    res.redirect('/profile');
+                  })
+              })
+          })
+          .catch(err => next(err));
+      })
+      .catch(err => next(err));
+  })
+  .catch(err => next(err));
+});
 
 module.exports = router;
