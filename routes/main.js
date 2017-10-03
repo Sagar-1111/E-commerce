@@ -2,6 +2,7 @@ const router = require('express').Router();
 const Product = require('../models/product');
 const Cart = require('../models/cart');
 const stripe = require('stripe')('sk_test_RtVWGtHcykG3FyyNS1EGhbIq');
+const User = require('../models/user');
 
 function paginate(req, res, next){
   const perPage = 9;
@@ -60,7 +61,7 @@ router.get('/cart', (req, res, next) => {
 });
 
 router.post('/product/:product_id', (req, res, next) => {
-  Cart.findOne({ owner: req.user._id })
+  Cart.findOne(req.user._id)
     .then(cart => {
       cart.items.push({
         item: req.body.product_id,
@@ -132,7 +133,7 @@ router.get('/products/:id', (req, res, next) => {
 });
 
 router.get('/product/:id', (req, res, next) => {
-  Product.findById({ _id: req.params.id })
+  Product.findById(req.params.id)
     .then(product => {
       res.render('main/product', {
         product: product
@@ -159,7 +160,7 @@ router.post('/payment', (req, res, next) => {
       .then(cart => {
         User.findOne({ _id: req.user._id })
           .then(user => {
-            user.forEach((item, index) => {
+            cart.items.forEach((item, index) => {
               user.history.push({
                 item: item.item,
                 paid: item.price
