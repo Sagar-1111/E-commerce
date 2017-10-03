@@ -12,8 +12,8 @@ const UserSchema = new Schema({
   },
   address: String,
   history: [{
-    date: Date,
-    paid: { type: Number, ref: 'Product'}
+    item: { type: Schema.Types.ObjectId, ref: 'Product' },
+    paid: { type: Number, default: 0 }
   }]
 });
 

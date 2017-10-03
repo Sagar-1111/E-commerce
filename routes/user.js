@@ -16,7 +16,10 @@ router.post('/login', passport.authenticate('local-login',{
 }));
 
 router.get('/profile', (req, res, next) => {
-  res.render('accounts/profile')
+  User.findOne({ _id: req.user._id })
+    .populate('history.item')
+    .then(foundUser => res.render('accounts/profile', { user: foundUser }))
+    .catch(err => next(err));
 });
 
 router.get('/signup', (req, res, next) =>{

@@ -61,7 +61,7 @@ router.get('/cart', (req, res, next) => {
 });
 
 router.post('/product/:product_id', (req, res, next) => {
-  Cart.findOne(req.user._id)
+  Cart.findOne({ owner: req.user._id })
     .then(cart => {
       cart.items.push({
         item: req.body.product_id,
